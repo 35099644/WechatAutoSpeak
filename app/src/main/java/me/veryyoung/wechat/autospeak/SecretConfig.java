@@ -7,4 +7,8 @@ package me.veryyoung.wechat.autospeak;
 public class SecretConfig {
 
     public static final String MS_KEY = "";
+
+    public static final String TRANS_APIID = "";
+
+    public static final String TRANS_SECURITY_KEY = "";
 }

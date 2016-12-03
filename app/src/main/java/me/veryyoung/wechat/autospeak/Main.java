@@ -115,17 +115,15 @@ public class Main implements IXposedHookLoadPackage {
         @Override
         protected String doInBackground(String... args) {
             String image = args[0];
-            if (image.startsWith("http")) {
-                return describe(image);
-            }
-            return describe(new File(image));
+            String desc = image.startsWith("http") ? describe(image) : describe(new File(image));
+            return Translator.translate(desc);
         }
 
 
         //这个是在后台执行完毕之后执行
         @Override
         protected void onPostExecute(String result) {
-            log("表情转文字：" + result);
+            log("图片转换结果：" + result);
         }
     }
 
