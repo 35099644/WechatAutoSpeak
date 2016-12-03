@@ -13,6 +13,7 @@ import static de.robv.android.xposed.XposedHelpers.callStaticMethod;
 import static de.robv.android.xposed.XposedHelpers.findAndHookConstructor;
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
+import static me.veryyoung.wechat.autospeak.ImageDescriber.describeNetworkImage;
 
 
 public class Main implements IXposedHookLoadPackage {
@@ -55,6 +56,8 @@ public class Main implements IXposedHookLoadPackage {
                                     // 表情；
                                     String expressionUrl = getExpressionUrl(content);
                                     log("表情消息:" + expressionUrl);
+                                    String response = describeNetworkImage(expressionUrl);
+                                    log("表情转文字：" + response);
                                     break;
                                 default:
                                     //do nothing;
