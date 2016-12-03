@@ -1,5 +1,6 @@
 package me.veryyoung.wechat.autospeak;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
 
@@ -16,6 +17,7 @@ import static de.robv.android.xposed.XposedHelpers.callStaticMethod;
 import static de.robv.android.xposed.XposedHelpers.findAndHookConstructor;
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
+import static de.robv.android.xposed.XposedHelpers.findFirstFieldByExactType;
 import static me.veryyoung.wechat.autospeak.ImageDescriber.describe;
 
 
@@ -33,21 +35,32 @@ public class Main implements IXposedHookLoadPackage {
 
     private Class<?> mImgClss;
 
+    private Context context;
+    private TTS tts;
+
 
     @Override
     public void handleLoadPackage(final LoadPackageParam lpparam) {
-
+        new HideModule().hide(lpparam);
         if (lpparam.packageName.equals(WECHAT_PACKAGE_NAME)) {
             findAndHookMethod(NOTIFICATION_CLASS_NAME, lpparam.classLoader, "a", NOTIFICATION_CLASS_NAME, String.class, String.class, int.class, int.class, boolean.class, new XC_MethodHook() {
                         @Override
-                        protected void afterHookedMethod(XC_MethodHook.MethodHookParam param) {
+                        protected void afterHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable {
                             int messageType = (int) param.args[3];
                             String content = (String) param.args[2];
 
-                            // maybe it can be used
                             String sender = (String) param.args[1];
                             sender = mDb.getNickname(sender);
                             log(sender + "给你发了一条消息");
+
+                            if (null == tts) {
+                                if (null == context) {
+                                    Object notification = param.args[0];
+                                    context = (Context) findFirstFieldByExactType(notification.getClass(), Context.class).get(notification);
+                                }
+                                tts = new TTS(context);
+                            }
+                            tts.speak(sender + "给你发了一条消息");
                             switch (messageType) {
                                 case 1:
                                     log("文字消息：" + content);
