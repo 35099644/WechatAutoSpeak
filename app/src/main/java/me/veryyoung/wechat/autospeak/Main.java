@@ -2,19 +2,21 @@ package me.veryyoung.wechat.autospeak;
 
 import android.database.Cursor;
 import android.os.AsyncTask;
-import android.text.TextUtils;
+
+import java.io.File;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
+import static android.text.TextUtils.isEmpty;
 import static de.robv.android.xposed.XposedBridge.log;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.callStaticMethod;
 import static de.robv.android.xposed.XposedHelpers.findAndHookConstructor;
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
-import static me.veryyoung.wechat.autospeak.ImageDescriber.describeNetworkImage;
+import static me.veryyoung.wechat.autospeak.ImageDescriber.describe;
 
 
 public class Main implements IXposedHookLoadPackage {
@@ -52,14 +54,13 @@ public class Main implements IXposedHookLoadPackage {
                                     // 图片消息
                                     String imagePath = getImagePath();
                                     log("图片消息:" + imagePath);
+                                    new DescriberTask().execute(imagePath);
                                     break;
                                 case 47:
                                     // 表情；
-                                    log("aaa:" + content);
                                     String expressionUrl = getExpressionUrl(content);
                                     log("表情消息:" + expressionUrl);
-                                    new DesciberTask().execute(expressionUrl);
-
+                                    new DescriberTask().execute(expressionUrl);
                                     break;
                                 default:
                                     //do nothing;
@@ -98,10 +99,10 @@ public class Main implements IXposedHookLoadPackage {
         }
         String imgPath = cursor.getString(cursor.getColumnIndex("imgPath"));
         String locationInSDCard = (String) callMethod(callStaticMethod(mImgClss, IMAGE_METHOD_NAME1), IMAGE_METHOD_NAME2, imgPath);
-        if (TextUtils.isEmpty(locationInSDCard)) {
+        if (isEmpty(locationInSDCard)) {
             return null;
         }
-        return locationInSDCard + ".jpg";
+        return locationInSDCard.replace("emulated/0", "emulated/legacy");
     }
 
     private String getExpressionUrl(String content) {
@@ -109,11 +110,15 @@ public class Main implements IXposedHookLoadPackage {
         return content.substring(0, content.indexOf("\""));
     }
 
-    private class DesciberTask extends AsyncTask<String, String, String> {
+    private class DescriberTask extends AsyncTask<String, String, String> {
 
         @Override
         protected String doInBackground(String... args) {
-            return describeNetworkImage(args[0]);
+            String image = args[0];
+            if (image.startsWith("http")) {
+                return describe(image);
+            }
+            return describe(new File(image));
         }
 
 

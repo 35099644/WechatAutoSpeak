@@ -4,6 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 
 import okhttp3.MediaType;
@@ -20,16 +21,33 @@ import static okhttp3.RequestBody.create;
 
 public class ImageDescriber {
 
-    private static final String MEDIA_TYPE = "application/json; charset=utf-8";
+    private static final String APPLICATION_JSON = "application/json; charset=utf-8";
+    public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
 
-    public static String describeNetworkImage(String url) {
-        final OkHttpClient client = new OkHttpClient();
+    private static final OkHttpClient client = new OkHttpClient();
+
+
+    public static String describe(String url) {
         Request request = new Request.Builder()
                 .url("https://api.projectoxford.ai/vision/v1.0/describe")
                 .header("Ocp-Apim-Subscription-Key", MS_KEY)
-                .header("Content-Type", MEDIA_TYPE)
-                .post(create(MediaType.parse(MEDIA_TYPE), "{\"url\":\"" + url + "\"}"))
+                .header("Content-Type", APPLICATION_JSON)
+                .post(create(MediaType.parse(APPLICATION_JSON), "{\"url\":\"" + url + "\"}"))
                 .build();
+        return getDesc(request);
+    }
+
+    public static String describe(File file) {
+        Request request = new Request.Builder()
+                .url("https://api.projectoxford.ai/vision/v1.0/describe")
+                .header("Ocp-Apim-Subscription-Key", MS_KEY)
+                .header("Content-Type", APPLICATION_OCTET_STREAM)
+                .post(create(MediaType.parse(APPLICATION_OCTET_STREAM), file))
+                .build();
+        return getDesc(request);
+    }
+
+    private static String getDesc(Request request) {
         try {
             Response response = client.newCall(request).execute();
             if (!response.isSuccessful()) {
@@ -51,10 +69,6 @@ public class ImageDescriber {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return null;
-    }
-
-    public String describeLocalImage(String path) {
         return null;
     }
 }
