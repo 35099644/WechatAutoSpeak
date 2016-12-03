@@ -6,5 +6,5 @@ package me.veryyoung.wechat.autospeak;
 
 public class SecretConfig {
 
-    public static final String MS_KEY = "g";
+    public static final String MS_KEY = "";
 }

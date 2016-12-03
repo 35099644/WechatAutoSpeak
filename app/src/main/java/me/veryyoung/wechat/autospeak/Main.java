@@ -1,6 +1,7 @@
 package me.veryyoung.wechat.autospeak;
 
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.text.TextUtils;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
@@ -54,10 +55,11 @@ public class Main implements IXposedHookLoadPackage {
                                     break;
                                 case 47:
                                     // 表情；
+                                    log("aaa:" + content);
                                     String expressionUrl = getExpressionUrl(content);
                                     log("表情消息:" + expressionUrl);
-                                    String response = describeNetworkImage(expressionUrl);
-                                    log("表情转文字：" + response);
+                                    new DesciberTask().execute(expressionUrl);
+
                                     break;
                                 default:
                                     //do nothing;
@@ -103,7 +105,23 @@ public class Main implements IXposedHookLoadPackage {
     }
 
     private String getExpressionUrl(String content) {
-        return "http:" + content.substring(content.indexOf("//")).substring(0, content.indexOf("\""));
+        content = "http:" + content.substring(content.indexOf("//"));
+        return content.substring(0, content.indexOf("\""));
+    }
+
+    private class DesciberTask extends AsyncTask<String, String, String> {
+
+        @Override
+        protected String doInBackground(String... args) {
+            return describeNetworkImage(args[0]);
+        }
+
+
+        //这个是在后台执行完毕之后执行
+        @Override
+        protected void onPostExecute(String result) {
+            log("表情转文字：" + result);
+        }
     }
 
 
