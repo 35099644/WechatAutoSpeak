@@ -45,7 +45,9 @@ public class Main implements IXposedHookLoadPackage {
                             String content = (String) param.args[2];
 
                             // maybe it can be used
-                            // String sender = (String) param.args[1];
+                            String sender = (String) param.args[1];
+                            sender = mDb.getNickname(sender);
+                            log(sender + "给你发了一条消息");
                             switch (messageType) {
                                 case 1:
                                     log("文字消息：" + content);
