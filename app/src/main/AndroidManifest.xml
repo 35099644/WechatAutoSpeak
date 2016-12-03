@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="me.veryyoung.wechat.autospeak">
+
+    <application android:label="WechatAutoSpeak">
+
+        <meta-data
+            android:name="xposedmodule"
+            android:value="true" />
+        <meta-data
+            android:name="xposeddescription"
+            android:value="自动读出微信消息" />
+        <meta-data
+            android:name="xposedminversion"
+            android:value="30" />
+    </application>
+</manifest>
