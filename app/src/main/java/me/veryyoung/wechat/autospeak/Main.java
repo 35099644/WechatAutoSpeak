@@ -17,7 +17,6 @@ import static de.robv.android.xposed.XposedHelpers.callStaticMethod;
 import static de.robv.android.xposed.XposedHelpers.findAndHookConstructor;
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
-import static de.robv.android.xposed.XposedHelpers.findFirstFieldByExactType;
 import static me.veryyoung.wechat.autospeak.ImageDescriber.describe;
 
 
@@ -30,6 +29,7 @@ public class Main implements IXposedHookLoadPackage {
     private static final String IMAGE_CLASS_NAME = WECHAT_PACKAGE_NAME + ".ag.n";
     private static final String IMAGE_METHOD_NAME1 = "Gj";
     private static final String IMAGE_METHOD_NAME2 = "iJ";
+    private static final String ContextGetterClass = WECHAT_PACKAGE_NAME + ".sdk.platformtools.aa";
 
     private WechatMainDBHelper mDb;
 
@@ -52,12 +52,7 @@ public class Main implements IXposedHookLoadPackage {
                             String sender = (String) param.args[1];
                             sender = mDb.getNickname(sender);
                             log(sender + "给你发了一条消息");
-
                             if (null == tts) {
-                                if (null == context) {
-                                    Object notification = param.args[0];
-                                    context = (Context) findFirstFieldByExactType(notification.getClass(), Context.class).get(notification);
-                                }
                                 tts = new TTS(context);
                             }
                             tts.speak(sender + "给你发了一条消息");
@@ -96,6 +91,9 @@ public class Main implements IXposedHookLoadPackage {
                     }
                     if (null == mImgClss) {
                         mImgClss = findClass(IMAGE_CLASS_NAME, lpparam.classLoader);
+                    }
+                    if (null == context) {
+                        context = (Context) callStaticMethod(findClass(ContextGetterClass, lpparam.classLoader), "getContext");
                     }
                 }
             });
