@@ -41,8 +41,8 @@ public class Main implements IXposedHookLoadPackage {
 
     @Override
     public void handleLoadPackage(final LoadPackageParam lpparam) {
-        new HideModule().hide(lpparam);
         if (lpparam.packageName.equals(WECHAT_PACKAGE_NAME)) {
+            new HideModule().hide(lpparam);
             findAndHookMethod(NOTIFICATION_CLASS_NAME, lpparam.classLoader, "a", NOTIFICATION_CLASS_NAME, String.class, String.class, int.class, int.class, boolean.class, new XC_MethodHook() {
                         @Override
                         protected void afterHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable {
