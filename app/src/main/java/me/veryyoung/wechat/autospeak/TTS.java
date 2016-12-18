@@ -12,6 +12,7 @@ import static de.robv.android.xposed.XposedBridge.log;
 
 /**
  * Created by veryyoung on 2016/12/3.
+ * update by wjun on 2016/12/18
  */
 
 public class TTS implements OnInitListener {
@@ -20,19 +21,18 @@ public class TTS implements OnInitListener {
 
     public TTS(Context context) {
         this.context = context;
+        mTts = new TextToSpeech(context, this);
+
     }
 
     private TextToSpeech mTts;
 
     public void speak(String words) {
         //检查TTS数据是否已经安装并且可用
-        mTts = new TextToSpeech(context, this);
         if (null == mTts) {
-            Intent checkIntent = new Intent();
-            checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
-        } else {
-            mTts.speak(words, TextToSpeech.QUEUE_ADD, null);
+            mTts = new TextToSpeech(context, this);
         }
+        mTts.speak(words, TextToSpeech.QUEUE_ADD, null);
     }
 
     @Override

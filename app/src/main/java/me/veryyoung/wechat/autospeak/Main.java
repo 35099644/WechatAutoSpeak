@@ -17,6 +17,7 @@ import static de.robv.android.xposed.XposedHelpers.callStaticMethod;
 import static de.robv.android.xposed.XposedHelpers.findAndHookConstructor;
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
+import static de.robv.android.xposed.XposedHelpers.findFirstFieldByExactType;
 import static me.veryyoung.wechat.autospeak.ImageDescriber.describe;
 
 
@@ -35,7 +36,7 @@ public class Main implements IXposedHookLoadPackage {
 
     private Class<?> mImgClss;
 
-    private Context context;
+    private static Context context;
     private TTS tts;
 
 
@@ -50,23 +51,37 @@ public class Main implements IXposedHookLoadPackage {
                             String content = (String) param.args[2];
 
                             String sender = (String) param.args[1];
-                            sender = mDb.getNickname(sender);
+                            sender = mDb.getNickname(sender); //nickname对话聊天时代表聊天人微信名,群聊时代表群聊名
+
+                            if(content != null && content.contains(":")){  //如果是群聊
+                                String personSender = content.substring(0,content.indexOf(":"));
+                                sender = sender + "群中的"+ mDb.getNickname(personSender);
+                                content = content.substring(content.indexOf(":")+1);
+                            }
+
                             log(sender + "给你发了一条消息");
                             if (null == tts) {
+                                if (null == context) {
+                                    Object notification = param.args[0];
+                                    context = (Context) findFirstFieldByExactType(notification.getClass(), Context.class).get(notification);
+
+                                }
                                 tts = new TTS(context);
                             }
-                            tts.speak(sender + "给你发了一条消息");
+
                             switch (messageType) {
                                 case 1:
                                     log("文字消息：" + content);
+                                    tts.speak(sender + "给你发了一条消息  "+content);
                                     break;
                                 case 3:
                                     // 图片消息
                                     String imagePath = getImagePath();
                                     log("图片消息:" + imagePath);
+                                    tts.speak(sender + "给你发了一条图片  ");
                                     new DescriberTask().execute(imagePath);
                                     break;
-                                case 47:
+                                case 47:  // to improve
                                     // 表情；
                                     String expressionUrl = getExpressionUrl(content);
                                     log("表情消息:" + expressionUrl);
@@ -137,6 +152,7 @@ public class Main implements IXposedHookLoadPackage {
         @Override
         protected void onPostExecute(String result) {
             log("图片转换结果：" + result);
+            tts.speak("图片内容为："+result);
         }
     }
 
